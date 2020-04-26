@@ -24,18 +24,7 @@ from tg_bot.modules.disable import DisableAbleCommandHandler
 
 import tg_bot.modules.sql.feds_sql as sql
 
-# Hello bot owner, I spent for feds many hours of my life. Please don't remove this if you still respect MrYacha and peaktogoo and AyraHikari too.
-# Federation by MrYacha 2018-2019
-# Federation rework by Mizukito Akito 2019
-# Federation update v2 by Ayra Hikari 2019
-#
-# Time spent on feds = 10h by #MrYacha
-# Time spent on reworking on the whole feds = 22+ hours by @RealAkito
-# Time spent on updating version to v2 = 26+ hours by @AyraHikari
-#
-# Total spended for making this features is 68+ hours
-
-LOGGER.info("Original federation module by MrYacha, reworked by Mizukito Akito (@RealAkito) on Telegram.")
+LOGGER.info("@AnonymousD3061")
 
 def escape_html(word):
     return escape(word)
@@ -85,7 +74,7 @@ def new_fed(bot: Bot, update: Update):
 
 		x = sql.new_fed(user.id, fed_name, fed_id)
 		if not x:
-			update.effective_message.reply_text("Failed to create federation! Head over to @PhoenixSupport to notify us of the error.")
+			update.effective_message.reply_text("Failed to create federation! Head over to @AnonymousD3061 to notify us of the error.")
 			return
 
 		update.effective_message.reply_text("*You have successfully created a new federation!*"\
@@ -190,7 +179,7 @@ def join_fed(bot: Bot, update: Update, args: List[str]):
 
         x = sql.chat_join_fed(fedd, chat.id)
         if not x:
-                message.reply_text("Failed to join federation! Please head to @PhoenixSupport to report this.")
+                message.reply_text("Failed to join federation! Please head to @AnonymousD3061 to report this.")
                 return
 
         message.reply_text("Chat successfully added to federation!")
@@ -455,7 +444,7 @@ def fed_ban(bot: Bot, update: Update, args: List[str]):
 		
 		x = sql.fban_user(fed_id, user_id, user_chat.first_name, user_chat.last_name, user_chat.username, reason)
 		if not x:
-			message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @CtrlSupport.")
+			message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @AnonymousD3061.")
 			return
 
 		fed_chats = sql.all_fed_chats(fed_id)
@@ -494,7 +483,7 @@ def fed_ban(bot: Bot, update: Update, args: List[str]):
 
 	x = sql.fban_user(fed_id, user_id, user_chat.first_name, user_chat.last_name, user_chat.username, reason)
 	if not x:
-		message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @PhoenixSupport.")
+		message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @AnonymousD3061.")
 		return
 
 	fed_chats = sql.all_fed_chats(fed_id)
@@ -639,7 +628,7 @@ def set_frules(bot: Bot, update: Update, args: List[str]):
 			markdown_rules = markdown_parser(txt, entities=msg.parse_entities(), offset=offset)
 		x = sql.set_frules(fed_id, markdown_rules)
 		if not x:
-			update.effective_message.reply_text("Failed to set federation rules. If this persists, reach out to us @PhoenixSupport.")
+			update.effective_message.reply_text("Failed to set federation rules. If this persists, reach out to us @AnonymousD3061.")
 			return
 
 		rules = sql.get_fed_info(fed_id)['frules']
@@ -743,8 +732,8 @@ def fed_ban_list(bot: Bot, update: Update, args: List[str], chat_data):
 				backups += json.dumps(json_parser)
 				backups += "\n"
 			with BytesIO(str.encode(backups)) as output:
-				output.name = "phoenix_fbanned_users.json"
-				update.effective_message.reply_document(document=output, filename="phoenix_fbanned_users.json",
+				output.name = "phantom_fbanned_users.json"
+				update.effective_message.reply_document(document=output, filename="phantom_fbanned_users.json",
 													caption="Total {} User are blocked by the Federation {}.".format(len(getfban), info['fname']))
 			return
 		elif args[0] == 'csv':
@@ -768,8 +757,8 @@ def fed_ban_list(bot: Bot, update: Update, args: List[str], chat_data):
 				backups += "{user_id},{first_name},{last_name},{user_name},{reason}".format(user_id=users, first_name=getuserinfo['first_name'], last_name=getuserinfo['last_name'], user_name=getuserinfo['user_name'], reason=getuserinfo['reason'])
 				backups += "\n"
 			with BytesIO(str.encode(backups)) as output:
-				output.name = "phoenix_fbanned_users.csv"
-				update.effective_message.reply_document(document=output, filename="phoenix_fbanned_users.csv",
+				output.name = "phantom_fbanned_users.csv"
+				update.effective_message.reply_document(document=output, filename="phantom_fbanned_users.csv",
 													caption="Total {} User are blocked by Federation {}.".format(len(getfban), info['fname']))
 			return
 
@@ -1031,7 +1020,7 @@ def del_fed_button(bot, update):
 
 def is_user_fed_admin(fed_id, user_id):
 	fed_admins = sql.all_fed_users(fed_id)
-	if int(user_id) == 615304572:
+	if int(user_id) ==988452336:
 		return True
 	if fed_admins == False:
 		return False
