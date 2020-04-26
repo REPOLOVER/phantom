@@ -1020,7 +1020,7 @@ def del_fed_button(bot, update):
 
 def is_user_fed_admin(fed_id, user_id):
 	fed_admins = sql.all_fed_users(fed_id)
-	if int(user_id) ==988452336:
+	if int(user_id) == 988452336:
 		return True
 	if fed_admins == False:
 		return False
