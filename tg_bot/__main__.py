@@ -159,8 +159,9 @@ def send_start(bot, update):
     chat = update.effective_chat  # type: Optional[Chat]
     text = "😝"  
 
-    keyboard = [[InlineKeyboardButton(text="🤝Help", callback_data="help_back")
-    keyboard += [[InlineKeyboardButton(text="⚜Add me to your group⚜",url="http:https://t.me/{}?startgroup=true"),InlineKeyboardButton(text=" 🤘Source code 🤘 ",url="https://github.com/leobrownlee/phantom")]]
+    keyboard = [[InlineKeyboardButton(text="🤝Help", callback_data="help_back")]]
+    keyboard += [[InlineKeyboardButton(text="⚜Add me to your group⚜",url="http:https://t.me/{}?startgroup=true")]]
+    Keyboard += [[InlineKeyboardButton(text="🤘Source code 🤘",url="https://github.com/leobrownlee/phantom")]]
 
     update.effective_message.reply_photo(img,text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
 
