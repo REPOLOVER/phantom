@@ -37,7 +37,7 @@ MY SOURCE CODE IS AVAILABLE TO YOU
 
 [HERE](https://github.com/leobrownlee/phantom)
 
-HIT HELP FOR COMMANDS/help
+HIT HELP FOR COMMANDS  /help
 
 """
 
@@ -165,6 +165,14 @@ def send_start(bot, update):
         query.message.delete()
     except:
         Pass
+
+chat = update.effective_chat  # type: Optional[Chat]
+    text = _Hello_ *{}*,_My name is_ *{}*._A Powerful Telegram ProBot to Manage Your Groups,feel free to add to ur groups!!!
+
+    keyboard = [[InlineKeyboardButton(text="⚜Add me to your group⚜",url="http:https://t.me/{}?startgroup=true")]]
+
+    update.effective_message.(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
+
 
 
 # for test purposes
