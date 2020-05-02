@@ -1,7 +1,7 @@
 from telegram import ParseMode, Update, Bot, Chat
 from telegram.ext import CommandHandler, MessageHandler, BaseFilter, run_async
 
-from alluka import dispatcher
+from tg_bot import dispatcher
 
 import requests
 
