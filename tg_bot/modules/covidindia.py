@@ -48,7 +48,7 @@ __help__ = """
  - /covindia <state>: Get real time COVID-19 stats for the input Indian state
 """
 
-__mod_name__ = 'COVID-19 Tracker'
+__mod_name__ = 'COVID-19 VIRUS'
 
 COV_INDIA_HANDLER = CommandHandler('covindia', covindia)
 
