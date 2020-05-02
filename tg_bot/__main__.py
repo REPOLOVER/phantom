@@ -403,6 +403,9 @@ def main():
     test_handler = CommandHandler("test", test)
     start_handler = CommandHandler("start", start, pass_args=True)
 
+    start_callback_handler = CallbackQueryHandler(send_start, pattern=r"bot_start")
+    
+
     help_handler = CommandHandler("help", get_help)
     help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
 
@@ -419,7 +422,7 @@ def main():
     dispatcher.add_handler(help_callback_handler)
     dispatcher.add_handler(settings_callback_handler)
     dispatcher.add_handler(migrate_handler)
-   
+    dispatcher.add_handler(start_callback_handler)
 
     # dispatcher.add_error_handler(error_callback)
 
