@@ -23,3 +23,4 @@ tswift
 gTTS
 wikipedia
 pyowm
+tabulate
