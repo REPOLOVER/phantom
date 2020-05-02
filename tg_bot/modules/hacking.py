@@ -37,10 +37,10 @@ __help__ = """
 - /hack : 😆
 """
 
-POLICE_HANDLER = DisableAbleCommandHandler("police", police)
+HACK_HANDLER = DisableAbleCommandHandler("hack", hack)
 
 
-dispatcher.add_handler(POLICE_HANDLER)
+dispatcher.add_handler(HACK_HANDLER)
 
 __mod_name__ = "HACK"
 __command_list__ = ["hack"]
