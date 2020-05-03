@@ -209,6 +209,7 @@ def invite(bot: Bot, update: Update):
         update.effective_message.reply_text("I can only give you invite links for supergroups and channels, sorry!")
 
 @run_async
+@connection_status
 @bot_admin
 @can_promote
 @user_admin
