@@ -14,8 +14,11 @@ from tg_bot import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, CERT_PATH, POR
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from tg_bot.modules import ALL_MODULES
+from tg_bot.modules.disable import DisableAbleCommandHandler
 from tg_bot.modules.helper_funcs.chat_status import is_user_admin
 from tg_bot.modules.helper_funcs.misc import paginate_modules
+
+
 
 PM_START_TEXT = """
 
