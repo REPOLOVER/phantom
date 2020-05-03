@@ -2,29 +2,42 @@ import importlib
 import re
 from typing import Optional, List
 
-from telegram import Message, Chat, Update, Bot, User
-from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Bot, Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.error import Unauthorized, BadRequest, TimedOut, NetworkError, ChatMigrated, TelegramError
-from telegram.ext import CommandHandler, Filters, MessageHandler, CallbackQueryHandler
+from telegram.ext import CommandHandler, MessageHandler, CallbackQueryHandler, Filters
 from telegram.ext.dispatcher import run_async, DispatcherHandlerStop
 from telegram.utils.helpers import escape_markdown
 
-from tg_bot import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, DONATION_LINK, CERT_PATH, PORT, URL, LOGGER, \
+from tg_bot import dispatcher, updater, TOKEN, WEBHOOK, OWNER_ID, CERT_PATH, PORT, URL, LOGGER, \
     ALLOW_EXCL
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from tg_bot.modules import ALL_MODULES
-from tg_bot.modules.disable import DisableAbleCommandHandler
 from tg_bot.modules.helper_funcs.chat_status import is_user_admin
 from tg_bot.modules.helper_funcs.misc import paginate_modules
 
 PM_START_TEXT = """
-Hey {}, my name is {}! I'm a group management bot.
-If  you have any questions about how to use me please give me /help. 
-I'm a group manager bot maintained by [this man](tg://user?id={}).
-My Creator is 🤴[This Man](https://t.me/Sur_vivor)😘.. 
-Sorce [here](https://github.com/Sur-vivor/survivortgbot)
-Hit help for commands /help..
+
+
+┈┈┈┈╱▔▔▔▔╲┈┈┈┈
+┈┈┈▕▕╲┊┊╱▏▏┈┈┈
+┈┈┈▕▕▂╱╲▂▏▏┈┈┈
+┈┈┈┈╲┊┊┊┊╱┈┈┈┈
+┈┈┈┈▕╲▂▂╱▏┈┈┈┈
+╱▔▔▔▔┊┊┊┊▔▔▔▔╲
+HOI    {}, MY NAME IS {} !
+
+I AM A GROUP MANAGER BOT MAINTAINED BY 
+
+[THIS LEGEND](tg://user?id={}).
+
+I AM COMPLETELY OPEN SOURCE
+
+MY SOURCE CODE IS AVAILABLE TO YOU
+
+[HERE](https://github.com/leobrownlee/phantom)
+
+HIT HELP FOR COMMANDS  /help
 
 """
 
@@ -32,22 +45,19 @@ HELP_STRINGS = """
 
 Hello! my name *{}*.
 
-*Main* available commands:
- - /start: Start the bot...
- - /help: help....
- - /donate: To find out more about donating!
+*Main* commands available:
+ - /start: start the bot
+ - /help: PM's you this message.
+ - /help <module name>: PM's you info about that module.
  - /settings:
-   - in PM: To find out what SETTINGS you have set....
-   - in a group:
+   - in PM: will send you your settings for all supported modules.
+   - in a group: will redirect you to pm, with all that chat's settings.
+
 
 {}
 And the following:
-""".format(dispatcher.bot.first_name, "" if not ALLOW_EXCL else "\nAll of the following commands  / or ! can  be used...\n")
+""".format(dispatcher.bot.first_name, "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n")
 
-DONATE_STRING = """Heya, glad to hear you want to donate!
-It took lots of work for [my creator](t.me/Sur_vivor) to get me to where I am now, and every donation helps \
-motivate him to make me even better. All the donation money will go to a better VPS to host me, and/or beer \
-(see his bio!). He's just a poor student, so every little helps!"""
 
 IMPORTED = {}
 MIGRATEABLE = []
@@ -113,16 +123,14 @@ def test(bot: Bot, update: Update):
     update.effective_message.reply_text("This person edited a message")
     print(update.effective_message)
 
-
 @run_async
 def start(bot: Bot, update: Update, args: List[str]):
     if update.effective_chat.type == "private":
         if len(args) >= 1:
             if args[0].lower() == "help":
                 send_help(update.effective_chat.id, HELP_STRINGS)
-
-
-
+            elif args[0].lower() == "disasters":
+                IMPORTED["disasters"].send_disasters(update)
             elif args[0].lower().startswith("stngs_"):
                 match = re.match("stngs_(.*)", args[0].lower())
                 chat = dispatcher.bot.getChat(match.group(1))
@@ -134,18 +142,24 @@ def start(bot: Bot, update: Update, args: List[str]):
 
             elif args[0][1:].isdigit() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
-                
 
         else:
             first_name = update.effective_user.first_name
             update.effective_message.reply_text(
                 PM_START_TEXT.format(escape_markdown(first_name), escape_markdown(bot.first_name), OWNER_ID),
-                parse_mode=ParseMode.MARKDOWN, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="❤️✰ADD ME TO YOUR GROUP✰❤️",
-                                                                       url="t.me/{}?startgroup=true".format(bot.username))]]))
-
+                parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
     else:
-        
-        update.effective_message.reply_text("Yo,🧞‍♂️I'm Alive..I'm a super bot 🔥...🚴‍♂️Speed 1 THz..Memory 1 Zettabyte.🕺🏻")
+        update.effective_message.reply_text("Yo, whadup?🤧")
+
+
+def send_start(bot, update):
+    #Try to remove old message
+    try:
+        query = update.callback_query
+        query.message.delete()
+    except:
+        Pass
+
 
 # for test purposes
 def error_callback(bot, update, error):
@@ -174,10 +188,6 @@ def error_callback(bot, update, error):
     except TelegramError:
         print(error)
         # handle all other telegram related errors
-
-
-
-
 
 
 @run_async
@@ -369,27 +379,6 @@ def get_settings(bot: Bot, update: Update):
         send_settings(chat.id, user.id, True)
 
 
-@run_async
-def donate(bot: Bot, update: Update):
-    user = update.effective_message.from_user
-    chat = update.effective_chat  # type: Optional[Chat]
-
-    if chat.type == "private":
-        update.effective_message.reply_text(DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-        if OWNER_ID !=1118936839 and DONATION_LINK:
-            update.effective_message.reply_text("You can also donate to the person currently running me "
-                                                "[here]({})".format(DONATION_LINK),
-                                                parse_mode=ParseMode.MARKDOWN)
-
-    else:
-        try:
-            bot.send_message(user.id, DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-            update.effective_message.reply_text("I've PM'ed you about donating to my creator!")
-        except Unauthorized:
-            update.effective_message.reply_text("Contact me in PM first to get donation information.")
-
 
 def migrate_chats(bot: Bot, update: Update):
     msg = update.effective_message  # type: Optional[Message]
@@ -412,15 +401,18 @@ def migrate_chats(bot: Bot, update: Update):
 
 def main():
     test_handler = CommandHandler("test", test)
-    start_handler = DisableAbleCommandHandler("start", start, pass_args=True)
+    start_handler = CommandHandler("start", start, pass_args=True)
 
-    help_handler = DisableAbleCommandHandler("help", get_help)
+    start_callback_handler = CallbackQueryHandler(send_start, pattern=r"bot_start")
+    
+
+    help_handler = CommandHandler("help", get_help)
     help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
 
-    settings_handler = DisableAbleCommandHandler("settings", get_settings)
+    settings_handler = CommandHandler("settings", get_settings)
     settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
 
-    donate_handler = CommandHandler("donate", donate)
+   
     migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
 
     # dispatcher.add_handler(test_handler)
@@ -430,13 +422,13 @@ def main():
     dispatcher.add_handler(help_callback_handler)
     dispatcher.add_handler(settings_callback_handler)
     dispatcher.add_handler(migrate_handler)
-    dispatcher.add_handler(donate_handler)
+    dispatcher.add_handler(start_callback_handler)
 
     # dispatcher.add_error_handler(error_callback)
 
     if WEBHOOK:
         LOGGER.info("Using webhooks.")
-        updater.start_webhook(listen="0.0.0.0",
+        updater.start_webhook(listen="127.0.0.1",
                               port=PORT,
                               url_path=TOKEN)
 
