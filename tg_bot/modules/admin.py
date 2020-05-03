@@ -207,6 +207,58 @@ def invite(bot: Bot, update: Update):
     else:
         update.effective_message.reply_text("I can only give you invite links for supergroups and channels, sorry!")
 
+@run_async
+@connection_status
+@bot_admin
+@can_promote
+@user_admin
+def set_title(bot: Bot, update: Update, args: List[str]):
+    chat = update.effective_chat
+    message = update.effective_message
+
+    user_id, title = extract_user_and_text(message, args)
+    try:
+        user_member = chat.get_member(user_id)
+    except:
+        return
+
+    if not user_id:
+        message.reply_text("You don't seem to be referring to a user.")
+        return
+
+    if user_member.status == 'creator':
+        message.reply_text("This person CREATED the chat, how can i set custom title for him?")
+        return
+
+    if not user_member.status == 'administrator':
+        message.reply_text("Can't set title for non-admins!\nPromote them first to set custom title!")
+        return
+
+    if user_id == bot.id:
+        message.reply_text("I can't set my own title myself! Get the one who made me admin to do it for me.")
+        return
+
+    if not title:
+        message.reply_text("Setting blank title doesn't do anything!")
+        return
+
+    if len(title) > 16:
+        message.reply_text("The title length is longer than 16 characters.\nTruncating it to 16 characters.")
+
+    result = requests.post(f"https://api.telegram.org/bot{TOKEN}/setChatAdministratorCustomTitle"
+                           f"?chat_id={chat.id}"
+                           f"&user_id={user_id}"
+                           f"&custom_title={title}")
+    status = result.json()["ok"]
+
+    if status is True:
+        bot.sendMessage(chat.id, f"Sucessfully set title for <code>{user_member.user.first_name or user_id}</code> "
+                                 f"to <code>{title[:16]}</code>!", parse_mode=ParseMode.HTML)
+    else:
+        description = result.json()["description"]
+        if description == "Bad Request: not enough rights to change custom title of the user":
+            message.reply_text("I can't set custom title for admins that I didn't promote!")
+
 
 @run_async
 def adminlist(bot: Bot, update: Update):
@@ -265,6 +317,10 @@ INVITE_HANDLER = CommandHandler("invitelink", invite, filters=Filters.group)
 PROMOTE_HANDLER = CommandHandler("promote", promote, pass_args=True, filters=Filters.group)
 DEMOTE_HANDLER = CommandHandler("demote", demote, pass_args=True, filters=Filters.group)
 
+
+SET_TITLE_HANDLER = CommandHandler("settitle", set_title, pass_args=True)
+
+
 ADMINLIST_HANDLER = DisableAbleCommandHandler("adminlist", adminlist, filters=Filters.group)
 
 dispatcher.add_handler(PIN_HANDLER)
@@ -272,4 +328,9 @@ dispatcher.add_handler(UNPIN_HANDLER)
 dispatcher.add_handler(INVITE_HANDLER)
 dispatcher.add_handler(PROMOTE_HANDLER)
 dispatcher.add_handler(DEMOTE_HANDLER)
+dispatcher.add_handler(SET_TITLE_HANDLER)
 dispatcher.add_handler(ADMINLIST_HANDLER)
+
+]
+__handlers__ = [ADMINLIST_HANDLER, PIN_HANDLER, UNPIN_HANDLER,
+                INVITE_HANDLER, PROMOTE_HANDLER, DEMOTE_HANDLER, SET_TITLE_HANDLER]
