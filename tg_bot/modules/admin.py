@@ -307,7 +307,6 @@ __help__ = """
  - /demote: demotes the user replied to
 """
 
-__mod_name__ = "Admin"
 
 PIN_HANDLER = CommandHandler("pin", pin, pass_args=True, filters=Filters.group)
 UNPIN_HANDLER = CommandHandler("unpin", unpin, filters=Filters.group)
@@ -331,6 +330,9 @@ dispatcher.add_handler(DEMOTE_HANDLER)
 dispatcher.add_handler(SET_TITLE_HANDLER)
 dispatcher.add_handler(ADMINLIST_HANDLER)
 
-]
+__mod_name__ = "Admin"
+
+__command_list__ = ["adminlist", "admins", "invitelink"]
+
 __handlers__ = [ADMINLIST_HANDLER, PIN_HANDLER, UNPIN_HANDLER,
                 INVITE_HANDLER, PROMOTE_HANDLER, DEMOTE_HANDLER, SET_TITLE_HANDLER]
