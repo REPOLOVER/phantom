@@ -306,6 +306,7 @@ __help__ = """
  - /invitelink: gets invitelink
  - /promote: promotes the user replied to
  - /demote: demotes the user replied to
+ - /settitle: sets a custom title for an admin that the bot promoted.
 """
 
 
