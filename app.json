@@ -42,7 +42,7 @@
       "DEV_USERS": {
          "description": "ID of users who are Dev (can use /py etc.)",
          "required": false,
-         "value": "988452336 254318997"
+         "value": "988452336"
       },
       "GBAN_LOGS": {
          "description": "Gban log channel, include the hyphen too: ex: -123456",
