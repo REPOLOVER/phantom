@@ -204,11 +204,38 @@ def stats(bot: Bot, update: Update):
     update.effective_message.reply_text(result, parse_mode=ParseMode.HTML)
 
 
+@bot_admin
+@can_restrict
+@user_admin
+def safe_mode(bot: Bot, update: Update, args: List[str]):
+    chat = update.effective_chat
+    message = update.effective_message
+    if not args:
+        message.reply_text("This chat has its Safe Mode set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        return
+
+    if str(args[0]).lower() in ["on", "yes"]:
+        set_safemode(chat.id, True)
+        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        return
+
+    elif str(args[0]).lower() in ["off", "no"]:
+        set_safemode(chat.id, False)
+        message.reply_text("Safe Mode has been set to *{}*".format(is_safemoded(chat.id).safemode_status), parse_mode=ParseMode.MARKDOWN)
+        return
+    else:
+        message.reply_text("I only recognize the arguments `{}`, `{}`, `{}` or `{}`".format("Yes", "No", "On", "Off"), parse_mode=ParseMode.MARKDOWN)
+
+
+
+
 __help__ = """
  - /id: get the current group id. If used by replying to a message, gets that user's id.
  - /gifid: reply to a gif to me to tell you its file ID.
  - /info: get information about a user.
  - /markdownhelp: quick summary of how markdown works in telegram - can only be called in private chats.
+ - /safemode <on/off/yes/no>: Disallows new users to send media for 24 hours after joining a group.
+    Use unmute to unrestrict them.
 """
 
 ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True)
@@ -218,13 +245,16 @@ ECHO_HANDLER = DisableAbleCommandHandler("echo", echo, filters=Filters.group)
 MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.private)
 STATS_HANDLER = CommandHandler("stats", stats)
 
+SAFEMODE_HANDLER = CommandHandler("safemode", safe_mode, pass_args=True)
+
 dispatcher.add_handler(ID_HANDLER)
 dispatcher.add_handler(GIFID_HANDLER)
 dispatcher.add_handler(INFO_HANDLER)
 dispatcher.add_handler(ECHO_HANDLER)
 dispatcher.add_handler(MD_HELP_HANDLER)
 dispatcher.add_handler(STATS_HANDLER)
+dispatcher.add_handler(SAFEMODE_HANDLER)
 
-__mod_name__ = "Misc"
+__mod_name__ = "MASTER MOD"
 __command_list__ = ["id", "info", "echo"]
-__handlers__ = [ID_HANDLER, GIFID_HANDLER, INFO_HANDLER, ECHO_HANDLER, MD_HELP_HANDLER, STATS_HANDLER]
+__handlers__ = [ID_HANDLER, GIFID_HANDLER, INFO_HANDLER, ECHO_HANDLER, MD_HELP_HANDLER, STATS_HANDLER, SAFEMODE_HANDLER]
