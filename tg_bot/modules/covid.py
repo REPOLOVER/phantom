@@ -1,9 +1,10 @@
-from telegram import ParseMode, Update, Bot, Chat, get
+from telegram import ParseMode.MARKDOWN, Update, Bot, Chat
 from telegram.ext import CommandHandler, MessageHandler, BaseFilter, run_async
 
 from tg_bot import dispatcher
 
 import requests
+import get
 
 import json
 from urllib.request import urlopen
