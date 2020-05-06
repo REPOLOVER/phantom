@@ -160,6 +160,53 @@ class WelcomeMute(BASE):
         self.welcomemutes = welcomemutes
 
 
+class WelcomeMute(BASE):
+    __tablename__ = "welcome_mutes"
+    chat_id = Column(String(14), primary_key=True)
+    welcomemutes = Column(UnicodeText, default=False)
+
+    def __init__(self, chat_id, welcomemutes):
+        self.chat_id = str(chat_id) # ensure string
+        self.welcomemutes = welcomemutes
+
+class CombotCASStatus(BASE):
+    __tablename__ = "cas_stats"
+    chat_id = Column(String(14), primary_key=True)
+    status = Column(Boolean, default=True)
+    autoban = Column(Boolean, default=False)
+    
+    def __init__(self, chat_id, status, autoban):
+        self.chat_id = str(chat_id) #chat_id is int, make sure it's string
+        self.status = status
+        self.autoban = autoban
+
+class BannedChat(BASE):
+    __tablename__ = "chat_blacklists"
+    chat_id = Column(String(14), primary_key=True)
+    
+    def __init__(self, chat_id):
+        self.chat_id = str(chat_id) #chat_id is int, make sure it is string
+
+class DefenseMode(BASE):
+    __tablename__ = "defense_mode"
+    chat_id = Column(String(14), primary_key=True)
+    status = Column(Boolean, default=False)
+    
+    def __init__(self, chat_id, status):
+        self.chat_id = str(chat_id)
+        self.status = status
+
+class AutoKickSafeMode(BASE):
+    __tablename__ = "autokicks_safemode"
+    chat_id = Column(String(14), primary_key=True)
+    timeK = Column(Integer, default=90)
+    
+    def __init__(self, chat_id, timeK):
+        self.chat_id = str(chat_id)
+        self.timeK = timeK
+
+
+
 class WelcomeMuteUsers(BASE):
     __tablename__ = "human_checks"
     user_id = Column(Integer, primary_key=True)
@@ -177,12 +224,19 @@ WelcomeButtons.__table__.create(checkfirst=True)
 GoodbyeButtons.__table__.create(checkfirst=True)
 WelcomeMute.__table__.create(checkfirst=True)
 WelcomeMuteUsers.__table__.create(checkfirst=True)
+CombotCASStatus.__table__.create(checkfirst=True)
+BannedChat.__table__.create(checkfirst=True)
+DefenseMode.__table__.create(checkfirst=True)
+AutoKickSafeMode.__table__.create(checkfirst=True)
 
 INSERTION_LOCK = threading.RLock()
 WELC_BTN_LOCK = threading.RLock()
 LEAVE_BTN_LOCK = threading.RLock()
 WM_LOCK = threading.RLock()
-
+CAS_LOCK = threading.RLock()
+BANCHATLOCK = threading.RLock()
+DEFENSE_LOCK = threading.RLock()
+AUTOKICK_LOCK = threading.RLock()
 
 def welcome_mutes(chat_id):
     try:
@@ -404,6 +458,47 @@ def get_gdbye_buttons(chat_id):
         SESSION.close()
 
 
+def get_cas_status(chat_id):
+    try:
+        resultObj = SESSION.query(CombotCASStatus).get(str(chat_id))
+        if resultObj:
+            return resultObj.status
+        return True
+    finally:
+        SESSION.close()
+
+def set_cas_status(chat_id, status):
+    with CAS_LOCK:
+        ban = False
+        prevObj = SESSION.query(CombotCASStatus).get(str(chat_id))
+        if prevObj:
+            ban = prevObj.autoban
+            SESSION.delete(prevObj)
+        newObj = CombotCASStatus(str(chat_id), status, ban)
+        SESSION.add(newObj)
+        SESSION.commit()
+
+def get_cas_autoban(chat_id):
+    try:
+        resultObj = SESSION.query(CombotCASStatus).get(str(chat_id))
+        if resultObj and resultObj.autoban:
+            return resultObj.autoban
+        return False
+    finally:
+        SESSION.close()
+        
+def set_cas_autoban(chat_id, autoban):
+    with CAS_LOCK:
+        status = True
+        prevObj = SESSION.query(CombotCASStatus).get(str(chat_id))
+        if prevObj:
+            status = prevObj.status
+            SESSION.delete(prevObj)
+        newObj = CombotCASStatus(str(chat_id), status, autoban)
+        SESSION.add(newObj)
+        SESSION.commit()
+
+
 def migrate_chat(old_chat_id, new_chat_id):
     with INSERTION_LOCK:
         chat = SESSION.query(Welcome).get(str(old_chat_id))
@@ -421,3 +516,68 @@ def migrate_chat(old_chat_id, new_chat_id):
                 btn.chat_id = str(new_chat_id)
 
         SESSION.commit()
+
+def __load_blacklisted_chats_list(): #load shit to memory to be faster, and reduce disk access 
+    global BLACKLIST
+    try:
+        BLACKLIST = {x.chat_id for x in SESSION.query(BannedChat).all()}
+    finally:
+        SESSION.close()
+
+def blacklistChat(chat_id):
+    with BANCHATLOCK:
+        chat = SESSION.query(BannedChat).get(chat_id)
+        if not chat:
+            chat = BannedChat(chat_id)
+            SESSION.merge(chat)
+        SESSION.commit()
+        __load_blacklisted_chats_list()
+    
+def unblacklistChat(chat_id):
+    with BANCHATLOCK:
+        chat = SESSION.query(BannedChat).get(chat_id)
+        if chat:
+            SESSION.delete(chat)
+        SESSION.commit()
+        __load_blacklisted_chats_list()
+
+def isBanned(chat_id):
+    return chat_id in BLACKLIST
+
+def getDefenseStatus(chat_id):
+    try:
+        resultObj = SESSION.query(DefenseMode).get(str(chat_id))
+        if resultObj:
+            return resultObj.status
+        return False #default
+    finally:
+        SESSION.close()
+
+def setDefenseStatus(chat_id, status):
+    with DEFENSE_LOCK:
+        prevObj = SESSION.query(DefenseMode).get(str(chat_id))
+        if prevObj:
+            SESSION.delete(prevObj)
+        newObj = DefenseMode(str(chat_id), status)
+        SESSION.add(newObj)
+        SESSION.commit()
+
+def getKickTime(chat_id):
+    try:
+        resultObj = SESSION.query(AutoKickSafeMode).get(str(chat_id))
+        if resultObj:
+            return resultObj.timeK
+        return 90 #90 seconds
+    finally:
+        SESSION.close()
+
+def setKickTime(chat_id, value):
+    with AUTOKICK_LOCK:
+        prevObj = SESSION.query(AutoKickSafeMode).get(str(chat_id))
+        if prevObj:
+            SESSION.delete(prevObj)
+        newObj = AutoKickSafeMode(str(chat_id), int(value))
+        SESSION.add(newObj)
+        SESSION.commit()
+
+__load_blacklisted_chats_list()
