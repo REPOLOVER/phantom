@@ -342,7 +342,7 @@ def setchat_title(bot: Bot, update: Update):
        return
 
     try:
-       .bot.set_chat_title(int(chat.id), str(title))
+       bot.set_chat_title(int(chat.id), str(title))
        msg.reply_text(f"Successfully set <b>{title}</b> as new chat title!", parse_mode=ParseMode.HTML)
     except BadRequest as excp:
        msg.reply_text(f"Error! {excp.message}.")
