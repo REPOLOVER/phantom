@@ -261,10 +261,10 @@ def set_title(bot: Bot, update: Update, args: List[str]):
         if description == "Bad Request: not enough rights to change custom title of the user":
             message.reply_text("I can't set custom title for admins that I didn't promote!")
 
+
 @run_async
 @bot_admin
 @user_admin
-@typing_action
 def setchatpic(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
@@ -289,7 +289,7 @@ def setchatpic(bot: Bot, update: Update):
        try:
           with open('gpic.png', 'rb') as chatp:
                bot.set_chat_photo(int(chat.id), photo=chatp)
-               msg.reply_text("Successfully set new chatpic!")
+               msg.reply_text("Successfully set new chat Picture!")
        except BadRequest as excp:
           msg.reply_text(f"Error! {excp.message}")
        finally:
@@ -303,7 +303,6 @@ def setchatpic(bot: Bot, update: Update):
 @run_async
 @bot_admin
 @user_admin
-@typing_action
 def rmchatpic(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
@@ -319,6 +318,9 @@ def rmchatpic(bot: Bot, update: Update):
     except BadRequest as excp:
        msg.reply_text(f"Error! {excp.message}.")
        return
+
+
+
 
 
 @run_async
