@@ -14,7 +14,7 @@ from urllib.request import urlopen
 @run_async
 def covid(bot: Bot, update: Update):
     message = update.effective_message
-    device = message.text[len('/covid'):]
+    device = message.text[len('/covid '):]
     fetch = get(f'https://coronavirus-tracker-api.herokuapp.com/all')
 
     if fetch.status_code == 200:
@@ -46,7 +46,7 @@ __help__ = """
 
 __mod_name__ = 'COVID-19'
 
-COVID_HANDLER = CommandHandler('covid', covid)
-
+COVID_HANDLER = DisableAbleCommandHandler("covid", covid, admin_ok=True)
 dispatcher.add_handler(COVID_HANDLER)
+
 
