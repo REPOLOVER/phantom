@@ -56,7 +56,7 @@ __mod_name__ = 'COVID 19'
 
 
 
-CORONA_HANDLER = DisableAbleCommandHandler("covid", corona, admin_ok=True)
+CORONA_HANDLER = DisableAbleCommandHandler("covid", covid, admin_ok=True)
 
 
 
