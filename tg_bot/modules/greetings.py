@@ -11,7 +11,7 @@ from telegram.ext import MessageHandler, Filters, CommandHandler, run_async, Cal
 from telegram.utils.helpers import mention_markdown, mention_html, escape_markdown
 
 import tg_bot.modules.sql.welcome_sql as sql
-import tg_bot.modules.sql.global_bans_sql.py as gbansql
+import tg_bot.modules.sql.global_bans_sql as gbansql
 import tg_bot.modules.sql.users_sql as userssql
 
 from tg_bot import dispatcher, OWNER_ID, LOGGER, SUDO_USERS, SUPPORT_USERS
