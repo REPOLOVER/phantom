@@ -149,17 +149,6 @@ class GoodbyeButtons(BASE):
         self.url = url
         self.same_line = same_line
 
-
-class WelcomeMute(BASE):
-    __tablename__ = "welcome_mutes"
-    chat_id = Column(String(14), primary_key=True)
-    welcomemutes = Column(UnicodeText, default=False)
-
-    def __init__(self, chat_id, welcomemutes):
-        self.chat_id = str(chat_id)  # ensure string
-        self.welcomemutes = welcomemutes
-
-
 class WelcomeMute(BASE):
     __tablename__ = "welcome_mutes"
     chat_id = Column(String(14), primary_key=True)
