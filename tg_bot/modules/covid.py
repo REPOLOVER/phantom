@@ -16,9 +16,9 @@ from urllib.request import urlopen
 
 
 @run_async
-def corona(bot: Bot, update: Update):
+def covid(bot: Bot, update: Update):
     message = update.effective_message
-    device = message.text[len('/corona '):]
+    device = message.text[len('/covid '):]
     fetch = get(f'https://coronavirus-tracker-api.herokuapp.com/all')
 
     if fetch.status_code == 200:
