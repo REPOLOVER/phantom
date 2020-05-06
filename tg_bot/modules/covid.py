@@ -1,9 +1,9 @@
-from telegram import ParseMode, Update, Bot, Chat
+from telegram import ParseMode, Update, Bot, Chat, get
 from telegram.ext import CommandHandler, MessageHandler, BaseFilter, run_async
 
 from tg_bot import dispatcher
 
-import requests,get
+import requests
 
 import json
 from urllib.request import urlopen
