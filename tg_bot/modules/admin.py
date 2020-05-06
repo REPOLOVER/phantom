@@ -329,7 +329,7 @@ def setchat_title(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
-    args = .args
+    args = args
 
     user_member = chat.get_member(user.id)
     if user_member.can_change_info == False:
