@@ -325,11 +325,11 @@ def rmchatpic(bot: Bot, update: Update):
 @run_async
 @bot_admin
 @user_admin
-def setchat_title(bot: Bot, update: Update, args: List[str]):
+def setchat_title(bot: Bot, update: Update, args: List):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
-    args = .args
+    
 
     user_member = chat.get_member(user.id)
     if user_member.can_change_info == False:
