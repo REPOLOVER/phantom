@@ -3,7 +3,7 @@ import re
 import requests
 from typing import Optional, List
 from parsel import Selector
-
+from urllib.request import urlopen
 
 from telegram import Message, Chat, Update, Bot, User
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
