@@ -271,6 +271,72 @@ def get_help(bot: Bot, update: Update):
     else:
         send_help(chat.id, HELP_STRINGS)
 
+def imdb_searchdata(bot: Bot, update: Update):
+    query_raw = update.callback_query
+    query = query_raw.data.split('$')
+    print(query)
+    if query[1] != query_raw.from_user.username:
+        return
+    title = ''
+    rating = ''
+    date = ''
+    synopsis = ''
+    url_sel = 'https://www.imdb.com/title/%s/' % (query[0])
+    text_sel = requests.get(url_sel).text
+    selector_global = Selector(text = text_sel)
+    title = selector_global.xpath('//div[@class="title_wrapper"]/h1/text()').get().strip()
+    try:
+        rating = selector_global.xpath('//div[@class="ratingValue"]/strong/span/text()').get().strip()
+    except:
+        rating = '-'
+    try:
+        date = '(' + selector_global.xpath('//div[@class="title_wrapper"]/h1/span/a/text()').getall()[-1].strip() + ')'
+    except:
+        date = selector_global.xpath('//div[@class="subtext"]/a/text()').getall()[-1].strip()
+    try:
+        synopsis_list = selector_global.xpath('//div[@class="summary_text"]/text()').getall()
+        synopsis = re.sub(' +',' ', re.sub(r'\([^)]*\)', '', ''.join(sentence.strip() for sentence in synopsis_list)))
+    except:
+        synopsis = '_No synopsis available._'
+    movie_data = '*%s*, _%s_\n★ *%s*\n\n%s' % (title, date, rating, synopsis)
+    query_raw.edit_message_text(
+        movie_data, 
+        parse_mode=ParseMode.MARKDOWN
+    )
+
+@run_async
+def imdb(bot: Bot, update: Update, args):
+    message = update.effective_message
+    query = ''.join([arg + '_' for arg in args]).lower()
+    if not query:
+        bot.send_message(
+            message.chat.id,
+            'You need to specify a movie/show name!'
+        )
+        return
+    url_suggs = 'https://v2.sg.media-imdb.com/suggests/%s/%s.json' % (query[0], query)
+    json_url = urlopen(url_suggs)
+    suggs_raw = ''
+    for line in json_url:
+        suggs_raw = line
+    skip_chars = 6 + len(query)
+    suggs_dict = json.loads(suggs_raw[skip_chars:][:-1])
+    if suggs_dict:
+        button_list = [[
+                InlineKeyboardButton(
+                    text = str(sugg['l'] + ' (' + str(sugg['y']) + ')'), 
+                    callback_data = str(sugg['id']) + '$' + str(message.from_user.username)
+                )] for sugg in suggs_dict['d'] if 'y' in sugg
+        ]
+        reply_markup = InlineKeyboardMarkup(button_list)
+        bot.send_message(
+            message.chat.id,
+            'Which one? ',
+            reply_markup = reply_markup
+        )
+    else:
+        pass
+
 
 def send_settings(chat_id, user_id, user=False):
     if user:
@@ -415,7 +481,9 @@ def main():
 
     help_handler = CommandHandler("help", get_help)
     help_callback_handler = CallbackQueryHandler(help_button, pattern=r"help_")
-
+    
+    IMDB_HANDLER = CommandHandler("imdb", imdb, pass_args=True)
+    IMDB_SEARCHDATA_HANDLER = CallbackQueryHandler(imdb_searchdata)
     settings_handler = CommandHandler("settings", get_settings)
     settings_callback_handler = CallbackQueryHandler(settings_button, pattern=r"stngs_")
 
@@ -430,7 +498,8 @@ def main():
     dispatcher.add_handler(settings_callback_handler)
     dispatcher.add_handler(migrate_handler)
     dispatcher.add_handler(start_callback_handler)
-
+    dispatcher.add_handler(IMDB_HANDLER)
+    dispatcher.add_handler(IMDB_SEARCHDATA_HANDLER)
     # dispatcher.add_error_handler(error_callback)
 
     if WEBHOOK:
