@@ -41,7 +41,7 @@ def covid(bot: Bot, update: Update):
 
 __help__ = """
  
- - /covid
+ - /covid get worldwide corona status
 """
 
 __mod_name__ = 'COVID-19'
