@@ -325,7 +325,6 @@ def rmchatpic(bot: Bot, update: Update):
 @run_async
 @bot_admin
 @user_admin
-@typing_action
 def setchat_title(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
