@@ -1,6 +1,6 @@
 from functools import wraps
 
-from telegram import Bot, Chat, ChatMember, Update, ParseMode
+from telegram import Bot, Chat, ChatMember, Update, ParseMode , User
 
 from tg_bot import dispatcher, DEL_CMDS, WHITELIST_USERS, TIGER_USERS, SUPPORT_USERS, SUDO_USERS, DEV_USERS
 
@@ -131,12 +131,12 @@ def whitelist_plus(func):
 
 def user_admin(func):
     @wraps(func)
-    def is_admin(bot: Bot, update: Update, *args, **kwargs):
+    def is_admin(bot: Bot, update: Update, context, *args, **kwargs):
         user = update.effective_user
         chat = update.effective_chat
 
         if user and is_user_admin(chat, user.id):
-            return func(bot, update, *args, **kwargs)
+            return func(bot, update, context, *args, **kwargs)
         elif not user:
             pass
         elif DEL_CMDS and " " not in update.effective_message.text:
