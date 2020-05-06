@@ -284,7 +284,7 @@ def setchatpic(bot: Bot, update: Update):
           msg.reply_text("You can only set some photo as chat pic!")
           return
        dlmsg = msg.reply_text("Hold on...")
-       tpic = bot.get_file(pic_id)
+       tpic = .bot.get_file(pic_id)
        tpic.download('gpic.png')
        try:
           with open('gpic.png', 'rb') as chatp:
