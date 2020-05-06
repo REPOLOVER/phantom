@@ -265,7 +265,7 @@ def set_title(bot: Bot, update: Update, args: List[str]):
 @bot_admin
 @user_admin
 @typing_action
-def setchatpic(update, bot):
+def setchatpic(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
@@ -304,7 +304,7 @@ def setchatpic(update, bot):
 @bot_admin
 @user_admin
 @typing_action
-def rmchatpic(update, bot):
+def rmchatpic(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
@@ -325,7 +325,7 @@ def rmchatpic(update, bot):
 @bot_admin
 @user_admin
 @typing_action
-def setchat_title(update, bot):
+def setchat_title(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
