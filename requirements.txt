@@ -24,3 +24,4 @@ gTTS
 wikipedia
 pyowm
 tabulate
+parsel
