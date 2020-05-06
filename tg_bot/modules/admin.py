@@ -319,44 +319,6 @@ def rmchatpic(bot: Bot, update: Update):
        return
 
 
-
-
-
-@run_async
-@bot_admin
-@user_admin
-def setchat_title(bot: Bot, update: Update, args: List):
-    chat = update.effective_chat
-    msg = update.effective_message
-    user = update.effective_user
-    
-
-    user_member = chat.get_member(user.id)
-    if user_member.can_change_info == False:
-       msg.reply_text("You don't have enough rights to change chat info!")
-       return
-
-    title = " ".join(args)
-    if not title:
-       msg.reply_text("Enter some text to set new title in your chat!")
-       return
-
-    try:
-       bot.set_chat_title(int(chat.id), str(title))
-       msg.reply_text(f"Successfully set <b>{title}</b> as new chat title!", parse_mode=ParseMode.HTML)
-    except BadRequest as excp:
-       msg.reply_text(f"Error! {excp.message}.")
-       return
-
-
-def __chat_settings__(chat_id, user_id):
-    return "You are *admin*: `{}`".format(
-        dispatcher.bot.get_chat_member(chat_id, user_id).status in ("administrator", "creator"))
-
-
-
-
-
 @run_async
 def adminlist(bot: Bot, update: Update):
     administrators = update.effective_chat.get_administrators()
@@ -406,7 +368,6 @@ __help__ = """
  - /settitle: Sets a custom title for an admin which is promoted by bot.
  - /setgpic: As a reply to file or photo to set group profile pic!
  - /delgpic: Same as above but to remove group profile pic.
- - /setgtitle <newtitle>: Sets new chat title in your group.
 
 """
 
@@ -423,7 +384,7 @@ DEMOTE_HANDLER = CommandHandler("demote", demote, pass_args=True, filters=Filter
 SET_TITLE_HANDLER = CommandHandler("settitle", set_title, pass_args=True)
 CHAT_PIC_HANDLER = CommandHandler("setgpic", setchatpic, filters=Filters.group)
 DEL_CHAT_PIC_HANDLER = CommandHandler("delgpic", rmchatpic, filters=Filters.group)
-SETCHAT_TITLE_HANDLER = CommandHandler("setgtitle", setchat_title, filters=Filters.group)
+
 
 
 
@@ -437,7 +398,6 @@ dispatcher.add_handler(DEMOTE_HANDLER)
 dispatcher.add_handler(SET_TITLE_HANDLER)
 dispatcher.add_handler(CHAT_PIC_HANDLER)
 dispatcher.add_handler(DEL_CHAT_PIC_HANDLER)
-dispatcher.add_handler(SETCHAT_TITLE_HANDLER)
 dispatcher.add_handler(ADMINLIST_HANDLER)
 
 __mod_name__ = "Admin"
@@ -445,4 +405,4 @@ __mod_name__ = "Admin"
 __command_list__ = ["adminlist", "admins", "invitelink"]
 
 __handlers__ = [ADMINLIST_HANDLER, PIN_HANDLER, UNPIN_HANDLER,
-                INVITE_HANDLER, PROMOTE_HANDLER, DEMOTE_HANDLER, SET_TITLE_HANDLER, CHAT_PIC_HANDLER, DEL_CHAT_PIC_HANDLER,  SETCHAT_TITLE_HANDLER]
+                INVITE_HANDLER, PROMOTE_HANDLER, DEMOTE_HANDLER, SET_TITLE_HANDLER, CHAT_PIC_HANDLER, DEL_CHAT_PIC_HANDLER]
