@@ -190,7 +190,7 @@ def bot_admin(func):
             not_admin = f"I'm not admin in <b>{update_chat_title}</b>! - REEEEEE"
 
         if is_bot_admin(chat, bot.id):
-            return func(bot, update, *args, **kwargs)
+            return func(bot, update, context, *args, **kwargs)
         else:
             update.effective_message.reply_text(not_admin, parse_mode=ParseMode.HTML)
 
