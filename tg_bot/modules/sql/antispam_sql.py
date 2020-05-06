@@ -2,7 +2,7 @@ import threading
 
 from sqlalchemy import Column, UnicodeText, Integer, String, Boolean
 
-from alluka.modules.sql import BASE, SESSION
+from tg_bot.modules.sql import BASE, SESSION
 
 
 class GloballyBannedUsers(BASE):
