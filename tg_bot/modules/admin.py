@@ -284,11 +284,11 @@ def setchatpic(update, bot):
           msg.reply_text("You can only set some photo as chat pic!")
           return
        dlmsg = msg.reply_text("Hold on...")
-       tpic = context.bot.get_file(pic_id)
+       tpic = .bot.get_file(pic_id)
        tpic.download('gpic.png')
        try:
           with open('gpic.png', 'rb') as chatp:
-               context.bot.set_chat_photo(int(chat.id), photo=chatp)
+               .bot.set_chat_photo(int(chat.id), photo=chatp)
                msg.reply_text("Successfully set new chatpic!")
        except BadRequest as excp:
           msg.reply_text(f"Error! {excp.message}")
@@ -314,7 +314,7 @@ def rmchatpic(update, bot):
        msg.reply_text("You don't have enough rights to delete group photo")
        return
     try:
-        context.bot.delete_chat_photo(int(chat.id))
+        .bot.delete_chat_photo(int(chat.id))
         msg.reply_text("Successfully deleted chat's profile photo!")
     except BadRequest as excp:
        msg.reply_text(f"Error! {excp.message}.")
@@ -329,7 +329,7 @@ def setchat_title(update, bot):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
-    args = context.args
+    args = .args
 
     user_member = chat.get_member(user.id)
     if user_member.can_change_info == False:
@@ -342,7 +342,7 @@ def setchat_title(update, bot):
        return
 
     try:
-       context.bot.set_chat_title(int(chat.id), str(title))
+       .bot.set_chat_title(int(chat.id), str(title))
        msg.reply_text(f"Successfully set <b>{title}</b> as new chat title!", parse_mode=ParseMode.HTML)
     except BadRequest as excp:
        msg.reply_text(f"Error! {excp.message}.")
