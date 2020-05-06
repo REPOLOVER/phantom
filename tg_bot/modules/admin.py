@@ -329,14 +329,14 @@ def setchat_title(bot: Bot, update: Update):
     chat = update.effective_chat
     msg = update.effective_message
     user = update.effective_user
-    args = args
+   
 
     user_member = chat.get_member(user.id)
     if user_member.can_change_info == False:
        msg.reply_text("You don't have enough rights to change chat info!")
        return
 
-    title = " ".join(args)
+    title = .join(bot)
     if not title:
        msg.reply_text("Enter some text to set new title in your chat!")
        return
