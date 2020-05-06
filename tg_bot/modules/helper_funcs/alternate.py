@@ -7,7 +7,7 @@ from typing import Optional
 from telegram import User, Chat, ChatMember, Update, Bot
 from telegram import error, ChatAction
 
-from tg_bot import  SUDO_USERS, WHITELIST_USERS
+from tg_bot import DEL_CMDS, SUDO_USERS, WHITELIST_USERS
 
 
 
