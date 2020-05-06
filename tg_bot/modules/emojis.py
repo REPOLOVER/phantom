@@ -67,7 +67,11 @@ def love(bot: Bot, update: Update):
 
 
 
+__help__ = """
 
+- /love
+- /hack
+"""
 
 
 
