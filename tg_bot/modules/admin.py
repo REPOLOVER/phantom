@@ -2,7 +2,7 @@ import html
 from typing import Optional, List
 
 import requests
-from telegram import Message, Chat, Update, Bot, User
+from telegram import Message, Chat, Update, Bot, User, args
 from telegram import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, Filters
@@ -336,7 +336,7 @@ def setchat_title(bot: Bot, update: Update):
        msg.reply_text("You don't have enough rights to change chat info!")
        return
 
-    title =.join(args)
+    title = " ".join(args)
     if not title:
        msg.reply_text("Enter some text to set new title in your chat!")
        return
