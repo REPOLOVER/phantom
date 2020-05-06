@@ -238,6 +238,8 @@ __help__ = """
  - /markdownhelp: quick summary of how markdown works in telegram - can only be called in private chats.
  - /safemode <on/off/yes/no>: Disallows new users to send media for 24 hours after joining a group.
     Use unmute to unrestrict them.
+
+ - /imdb <movie or TV series name>: View IMDb results for selected movie or TV series 
 """
 
 ID_HANDLER = DisableAbleCommandHandler("id", get_id, pass_args=True)
