@@ -31,6 +31,6 @@ __help__ = """
 
 __mod_name__ = "Corona"
 
-CORONA_HANDLER = DisableAbleCommandHandler("corona", corona)
+CRNA_HANDLER = DisableAbleCommandHandler("corona", corona)
 
-dispatcher.add_handler(CORONA_HANDLER)
+dispatcher.add_handler(CRNA_HANDLER)
