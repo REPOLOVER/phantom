@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, MessageHandler, BaseFilter, run_async
 
 from tg_bot import dispatcher
 
-import requests
+import requests,get
 
 import json
 from urllib.request import urlopen
