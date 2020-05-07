@@ -14,15 +14,15 @@ from telegram import ParseMode, Update, Bot, Chat, User, MessageEntity, InlineKe
 from telegram.ext import run_async, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from telegram.utils.helpers import escape_markdown, mention_html, mention_markdown
 
-from alluka import dispatcher, OWNER_ID, SUDO_USERS, WHITELIST_USERS, MESSAGE_DUMP, LOGGER
-from alluka.modules.helper_funcs.handlers import CMD_STARTERS
-from alluka.modules.helper_funcs.misc import is_module_loaded, send_to_list
-from alluka.modules.helper_funcs.chat_status import is_user_admin
-from alluka.modules.helper_funcs.extraction import extract_user, extract_user_and_text
-from alluka.modules.helper_funcs.string_handling import markdown_parser
-from alluka.modules.disable import DisableAbleCommandHandler
+from tg_bot import dispatcher, OWNER_ID, SUDO_USERS, WHITELIST_USERS, MESSAGE_DUMP, LOGGER
+from tg_bot.modules.helper_funcs.handlers import CMD_STARTERS
+from tg_bot.modules.helper_funcs.misc import is_module_loaded, send_to_list
+from tg_bot.modules.helper_funcs.chat_status import is_user_admin
+from tg_bot.modules.helper_funcs.extraction import extract_user, extract_user_and_text
+from tg_bot.modules.helper_funcs.string_handling import markdown_parser
+from tg_bot.modules.disable import DisableAbleCommandHandler
 
-import alluka.modules.sql.feds_sql as sql
+import tg_bot.modules.sql.feds_sql as sql
 
 # Hello bot owner, I spent for feds many hours of my life. Please don't remove this if you still respect MrYacha and peaktogoo and AyraHikari too.
 # Federation by MrYacha 2018-2019
@@ -83,7 +83,7 @@ def new_fed(bot: Bot, update: Update):
 
         x = sql.new_fed(user.id, fed_name, fed_id)
         if not x:
-            update.effective_message.reply_text("Failed to create federation! Head over to @allukatm to notify us of the error.")
+            update.effective_message.reply_text("Failed to create federation! Head over to @AnonymousD3061 to notify us of the error.")
             return
 
         update.effective_message.reply_text("*You have successfully created a new federation!*"\
@@ -187,7 +187,7 @@ def join_fed(bot: Bot, update: Update, args: List[str]):
 
         x = sql.chat_join_fed(fedd, chat.id)
         if not x:
-                message.reply_text("Failed to join federation! Please head to @allukatm to report this.")
+                message.reply_text("Failed to join federation! Please head to @AnonymousD3061 to report this.")
                 return
 
         message.reply_text("Chat successfully added to federation!")
@@ -451,7 +451,7 @@ def fed_ban(bot: Bot, update: Update, args: List[str]):
             return
         x = sql.fban_user(fed_id, user_id, user_chat.first_name, user_chat.last_name, user_chat.username, reason)
         if not x:
-            message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @allukatm.")
+            message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @AnonymousD3061.")
             return
 
         fed_chats = sql.all_fed_chats(fed_id)
@@ -490,7 +490,7 @@ def fed_ban(bot: Bot, update: Update, args: List[str]):
 
     x = sql.fban_user(fed_id, user_id, user_chat.first_name, user_chat.last_name, user_chat.username, reason)
     if not x:
-        message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @allukatm.")
+        message.reply_text("Failed to ban from the federation! If this problem persists, reach out to us @AnonymousD3061.")
         return
 
     fed_chats = sql.all_fed_chats(fed_id)
@@ -636,7 +636,7 @@ def set_frules(bot: Bot, update: Update, args: List[str]):
             markdown_rules = markdown_parser(txt, entities=msg.parse_entities(), offset=offset)
         x = sql.set_frules(fed_id, markdown_rules)
         if not x:
-            update.effective_message.reply_text("Failed to set federation rules. If this persists, reach out to us @allukatm.")
+            update.effective_message.reply_text("Failed to set federation rules. If this persists, reach out to us @AnonymousD3061.")
             return
 
         rules = sql.get_fed_info(fed_id)['frules']
@@ -741,7 +741,7 @@ def fed_ban_list(bot: Bot, update: Update, args: List[str], chat_data):
                 backups += "\n"
             with BytesIO(str.encode(backups)) as output:
                 output.name = "alluka_fbanned_users.json"
-                update.effective_message.reply_document(document=output, filename="alluka_fbanned_users.json",
+                update.effective_message.reply_document(document=output, filename="tg_bot_fbanned_users.json",
                                                     caption="Total {} User are blocked by the Federation {}.".format(len(getfban), info['fname']))
             return
         elif args[0] == 'csv':
@@ -765,8 +765,8 @@ def fed_ban_list(bot: Bot, update: Update, args: List[str], chat_data):
                 backups += "{user_id},{first_name},{last_name},{user_name},{reason}".format(user_id=users, first_name=getuserinfo['first_name'], last_name=getuserinfo['last_name'], user_name=getuserinfo['user_name'], reason=getuserinfo['reason'])
                 backups += "\n"
             with BytesIO(str.encode(backups)) as output:
-                output.name = "alluka_fbanned_users.csv"
-                update.effective_message.reply_document(document=output, filename="alluka_fbanned_users.csv",
+                output.name = "tg_bot_fbanned_users.csv"
+                update.effective_message.reply_document(document=output, filename="tg_bot_fbanned_users.csv",
                                                     caption="Total {} User are blocked by Federation {}.".format(len(getfban), info['fname']))
             return
 
@@ -1028,7 +1028,7 @@ def del_fed_button(bot, update):
 
 def is_user_fed_admin(fed_id, user_id):
     fed_admins = sql.all_fed_users(fed_id)
-    if int(user_id) == 802002142:
+    if int(user_id) == 988452336:
         return True
     if fed_admins == False:
         return False
