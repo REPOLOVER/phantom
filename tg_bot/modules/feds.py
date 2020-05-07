@@ -35,7 +35,7 @@ from tg_bot.modules.helper_funcs.alternate import send_message
 #
 # Total spended for making this features is 68+ hours
 
-LOGGER.info("Original federation module by MrYacha, reworked by Mizukito Akito (@RealAkito) on Telegram.")
+LOGGER.info("@AnonymousD3061")
 
 
 FBAN_ERRORS = {
