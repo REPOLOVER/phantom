@@ -108,5 +108,5 @@ dispatcher.add_handler(LOVE_HANDLER)
 dispatcher.add_handler(HACK_HANDLER)
 dispatcher.add_handler(SMALLTEXT_HANDLER)
 __mod_name__ = "EMOJIS"
-__command_list__ = ["love", "hack"]
-__handlers__ = [LOVE_HANDLER, HACK_HANDLER]
+__command_list__ = ["love", "hack", "smalltext"]
+__handlers__ = [LOVE_HANDLER, HACK_HANDLER, SMALLTEXT_HANDLER]
