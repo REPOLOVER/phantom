@@ -1,8 +1,10 @@
 import html
 import re
+import json
 from typing import List
 
 import requests
+from bs4 import BeautifulSoup
 from telegram import Bot, Update, MessageEntity, ParseMode
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, run_async, Filters
