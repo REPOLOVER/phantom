@@ -103,7 +103,7 @@ __help__ = """
 
 LOVE_HANDLER = DisableAbleCommandHandler("love", love)
 HACK_HANDLER = DisableAbleCommandHandler("hack", hack)
-SMALLTEXT_HANDLER = DiasableAbleCommandHandler("smalltext","smalltext")
+SMALLTEXT_HANDLER = DiasableAbleCommandHandler("smalltext",smalltext)
 dispatcher.add_handler(LOVE_HANDLER)
 dispatcher.add_handler(HACK_HANDLER)
 dispatcher.add_handler(SMALLTEXT_HANDLER)
