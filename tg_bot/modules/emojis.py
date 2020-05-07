@@ -40,30 +40,6 @@ hack_you = [
 
 
 
-small_text = [
-               "────▄▀▀▀▀▀▀▀▀▀▀▀▀▀▀█─█\n▀▀▀▀▄─█─█─█─█─█─█──█▀█\n─────▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀─▀",            
-               "───║─▄──▄──▄──▄──║────\n───║─▓──▓──▓──▓──║────\n───░░░░░░░░░░░░░─║────\n▀███████████████████──\n░██████████████████▀░░",               
-               "───▄▄─▄████▄▐▄▄▄▌\n──▐──████▀███▄█▄▌\n▐─▌──█▀▌──▐▀▌▀█▀\n─▀───▌─▌──▐─▌\n─────█─█──▐▌█",
-]
-
-
-
-
-@user_admin
-@run_async
-def smalltext(bot: Bot, update: Update):
-    msg = update.effective_message.reply_text('🔥') 
-    for x in range(EDIT_TIMES):
-        msg.edit_text(small_text[x%5])
-        time.sleep(EDIT_SLEEP)
-    msg.edit_text('😅')
-
-
-
-
-
-
-
 
 @user_admin
 @run_async
@@ -96,17 +72,16 @@ __help__ = """
 
 - /love
 - /hack
-- /smalltext
 """
 
 
 
 LOVE_HANDLER = DisableAbleCommandHandler("love", love)
 HACK_HANDLER = DisableAbleCommandHandler("hack", hack)
-SMALLTEXT_HANDLER = DiasableAbleCommandHandler("smalltext",smalltext)
+
 dispatcher.add_handler(LOVE_HANDLER)
 dispatcher.add_handler(HACK_HANDLER)
-dispatcher.add_handler(SMALLTEXT_HANDLER)
+
 __mod_name__ = "EMOJIS"
-__command_list__ = ["love", "hack", "smalltext"]
-__handlers__ = [LOVE_HANDLER, HACK_HANDLER, SMALLTEXT_HANDLER]
+__command_list__ = ["love", "hack"]
+__handlers__ = [LOVE_HANDLER, HACK_HANDLER]
