@@ -135,7 +135,7 @@ def del_fed(fed_id):
 			FEDERATION_CHATS_BYID.pop(fed_id)
 		# Delete fedban users
 		getall = FEDERATION_BANNED_USERID.get(fed_id)
-        if getall:
+            if getall:
             for x in getall:
                 banlist = SESSION.query(BansF).get((fed_id, str(x)))
                 if banlist:
