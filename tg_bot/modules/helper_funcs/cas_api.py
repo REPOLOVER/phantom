@@ -3,7 +3,6 @@ import json
 import datetime
 import requests
 
-
 VERSION = "1.3.3"
 CAS_QUERY_URL = "https://api.cas.chat/check?user_id="
 DL_DIR = "./csvExports"
