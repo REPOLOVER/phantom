@@ -141,6 +141,8 @@ def del_fed(fed_id):
                 if banlist:
                     SESSION.delete(banlist)
                     SESSION.commit()
+                FEDERATION_BANNED_USERID.pop(fed_id)
+		FEDERATION_BANNED_FULL.pop(fed_id)
         if FEDERATION_BANNED_USERID.get(fed_id):
             FEDERATION_BANNED_USERID.pop(fed_id)
         if FEDERATION_BANNED_FULL.get(fed_id):
