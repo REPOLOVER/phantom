@@ -255,45 +255,6 @@ def magisk(bot, update):
             return
 
 @run_async
-def device(bot, update, args):
-    if len(args) == 0:
-        reply = f'No codename provided, write a codename for fetching informations.'
-        del_msg = update.effective_message.reply_text("{}".format(reply),
-                               parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-        time.sleep(5)
-        try:
-            del_msg.delete()
-            update.effective_message.delete()
-        except BadRequest as err:
-            if (err.message == "Message to delete not found" ) or (err.message == "Message can't be deleted" ):
-                return
-    device = " ".join(args)
-    db = get(DEVICES_DATA).json()
-    newdevice = device.strip('lte') if device.startswith('beyond') else device
-    try:
-        reply = f'Search results for {device}:\n\n'
-        brand = db[newdevice][0]['brand']
-        name = db[newdevice][0]['name']
-        model = db[newdevice][0]['model']
-        codename = newdevice
-        reply += f'<b>{brand} {name}</b>\n' \
-            f'Model: <code>{model}</code>\n' \
-            f'Codename: <code>{codename}</code>\n\n'  
-    except KeyError as err:
-        reply = f"Couldn't find info about {device}!\n"
-        del_msg = update.effective_message.reply_text("{}".format(reply),
-                               parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-        time.sleep(5)
-        try:
-            del_msg.delete()
-            update.effective_message.delete()
-        except BadRequest as err:
-            if (err.message == "Message to delete not found" ) or (err.message == "Message can't be deleted" ):
-                return
-    update.message.reply_text("{}".format(reply),
-                               parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-
-@run_async
 def checkfw(bot, update, args):
     if not len(args) == 2:
         reply = f'Give me something to fetch, like:\n`/checkfw SM-N975F DBT`'
@@ -472,8 +433,6 @@ __help__ = """
 
  - /magisk - gets the latest magisk release for Stable/Beta/Canary
 
- - /device <codename> - gets android device basic info from its codename
-
  - /twrp <codename> -  gets latest twrp for the android device using the codename
 
  - /checkfw <model> <csc> - Samsung only - shows the latest firmware info for the given device, taken from samsung servers
@@ -490,7 +449,6 @@ ECHO_HANDLER = DisableAbleCommandHandler("echo", echo, filters=Filters.group)
 MD_HELP_HANDLER = CommandHandler("markdownhelp", markdown_help, filters=Filters.private)
 STATS_HANDLER = CommandHandler("stats", stats)
 MAGISK_HANDLER = DisableAbleCommandHandler("magisk", magisk)
-DEVICE_HANDLER = DisableAbleCommandHandler("device", device, pass_args=True)
 TWRP_HANDLER = DisableAbleCommandHandler("twrp", twrp, pass_args=True)
 GETFW_HANDLER = DisableAbleCommandHandler("getfw", getfw, pass_args=True)
 CHECKFW_HANDLER = DisableAbleCommandHandler("checkfw", checkfw, pass_args=True)
@@ -505,7 +463,6 @@ dispatcher.add_handler(MD_HELP_HANDLER)
 dispatcher.add_handler(STATS_HANDLER)
 dispatcher.add_handler(SAFEMODE_HANDLER)
 dispatcher.add_handler(MAGISK_HANDLER)
-dispatcher.add_handler(DEVICE_HANDLER)
 dispatcher.add_handler(TWRP_HANDLER)
 dispatcher.add_handler(GETFW_HANDLER)
 dispatcher.add_handler(CHECKFW_HANDLER)
@@ -513,4 +470,4 @@ dispatcher.add_handler(CHECKFW_HANDLER)
 
 __mod_name__ = "MASTER MOD"
 __command_list__ = ["id", "info", "echo"]
-__handlers__ = [ID_HANDLER, GIFID_HANDLER, INFO_HANDLER, ECHO_HANDLER, MD_HELP_HANDLER, STATS_HANDLER, SAFEMODE_HANDLER, MAGISK_HANDLER, DEVICE_HANDLER, TWRP_HANDLER, GETFW_HANDLER, CHECKFW_HANDLER]
+__handlers__ = [ID_HANDLER, GIFID_HANDLER, INFO_HANDLER, ECHO_HANDLER, MD_HELP_HANDLER, STATS_HANDLER, SAFEMODE_HANDLER, MAGISK_HANDLER, TWRP_HANDLER, GETFW_HANDLER, CHECKFW_HANDLER]
