@@ -457,11 +457,25 @@ def twrp(bot, update, args):
 
 __help__ = """
  - /id: get the current group id. If used by replying to a message, gets that user's id.
+
  - /gifid: reply to a gif to me to tell you its file ID.
+
  - /info: get information about a user.
+
  - /markdownhelp: quick summary of how markdown works in telegram - can only be called in private chats.
+
  - /safemode <on/off/yes/no>: Disallows new users to send media for 24 hours after joining a group.
     Use unmute to unrestrict them.
+
+ - /magisk - gets the latest magisk release for Stable/Beta/Canary
+
+ - /device <codename> - gets android device basic info from its codename
+
+ - /twrp <codename> -  gets latest twrp for the android device using the codename
+
+ - /checkfw <model> <csc> - Samsung only - shows the latest firmware info for the given device, taken from samsung servers
+
+ - /getfw <model> <csc> - Samsung only - gets firmware download links from samfrew, sammobile and sfirmwares for the given device
 
  - /imdb <movie or TV series name>: View IMDb results for selected movie or TV series 
 """
