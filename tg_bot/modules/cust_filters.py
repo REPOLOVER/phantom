@@ -23,48 +23,61 @@ HANDLER_GROUP = 10
 @run_async
 @connection_status
 def list_handlers(bot: Bot, update: Update):
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
 
-    chat = update.effective_chat
-    all_handlers = sql.get_chat_triggers(chat.id)
-
-    update_chat_title = chat.title
-    message_chat_title = update.effective_message.chat.title
-
-    if update_chat_title == message_chat_title:
-        BASIC_FILTER_STRING = "<b>Filters in this chat:</b>\n"
+    conn = connected(bot, update, chat, user.id, need_admin=False)
+    if not conn == False:
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+        filter_list = "*Filters in {}:*\n"
     else:
-        BASIC_FILTER_STRING = f"<b>Filters in {update_chat_title}</b>:\n"
+        chat_id = update.effective_chat.id
+        if chat.type == "private":
+            chat_name = "local filters"
+            filter_list = "*local filters:*\n"
+        else:
+            chat_name = chat.title
+            filter_list = "*Filters in {}*:\n"
+
+
+    all_handlers = sql.get_chat_triggers(chat_id)
 
     if not all_handlers:
-        if update_chat_title == message_chat_title:
-            update.effective_message.reply_text("No filters are active here!")
-        else:
-            update.effective_message.reply_text(f"No filters are active in <b>{update_chat_title}</b>!", parse_mode=telegram.ParseMode.HTML)
+        update.effective_message.reply_text("No filters in {}!".format(chat_name))
         return
 
-    filter_list = ""
     for keyword in all_handlers:
         entry = " - {}\n".format(escape_markdown(keyword))
-        if len(entry) + len(filter_list) + len(BASIC_FILTER_STRING) > telegram.MAX_MESSAGE_LENGTH:
-            filter_list = BASIC_FILTER_STRING + html.escape(filter_list)
-            update.effective_message.reply_text(filter_list, parse_mode=telegram.ParseMode.HTML)
+        if len(entry) + len(filter_list) > telegram.MAX_MESSAGE_LENGTH:
+            update.effective_message.reply_text(filter_list, parse_mode=telegram.ParseMode.MARKDOWN)
             filter_list = entry
         else:
             filter_list += entry
 
     if not filter_list == BASIC_FILTER_STRING:
-        filter_list = BASIC_FILTER_STRING + html.escape(filter_list)
-        update.effective_message.reply_text(filter_list, parse_mode=telegram.ParseMode.HTML)
+        update.effective_message.reply_text(filter_list, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
 @connection_status
 @user_admin
 def filters(bot: Bot, update: Update):
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+    msg = update.effective_message  # type: Optional[Message]
+    args = msg.text.split(None, 1)  # use python's maxsplit to separate Cmd, keyword, and reply_text
 
-    chat = update.effective_chat
-    msg = update.effective_message
-    args = msg.text.split(None, 1)
+    conn = connected(bot, update, chat, user.id)
+    if not conn == False:
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        chat_id = update.effective_chat.id
+        if chat.type == "private":
+            chat_name = "local filters"
+        else:
+            chat_name = chat.title
 
     if len(args) < 2:
         return
@@ -101,6 +114,8 @@ def filters(bot: Bot, update: Update):
         is_document = True
 
     elif msg.reply_to_message and msg.reply_to_message.photo:
+        offset = len(msg.reply_to_message.caption)
+        ignore_underscore_case, buttons = button_markdown_parser(msg.reply_to_message.caption, entities=msg.reply_to_message.parse_entities(), offset=offset)
         content = msg.reply_to_message.photo[-1].file_id  # last elem = best quality
         is_image = True
 
@@ -126,10 +141,10 @@ def filters(bot: Bot, update: Update):
         if handler.filters == (keyword, chat.id):
             dispatcher.remove_handler(handler, HANDLER_GROUP)
 
-    sql.add_filter(chat.id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video,
+    sql.add_filter(chat_id, keyword, content, is_sticker, is_document, is_image, is_audio, is_voice, is_video,
                    buttons)
 
-    msg.reply_text("Handler '{}' added!".format(keyword))
+    msg.reply_text("Handler '{}' added in *{}*!".format(keyword, chat_name), parse_mode=telegram.ParseMode.MARKDOWN)
     raise DispatcherHandlerStop
 
 
@@ -160,26 +175,72 @@ def stop_filter(bot: Bot, update: Update):
 
 
 @run_async
+@user_admin
+def stop_filter(bot: Bot, update: Update):
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+    args = update.effective_message.text.split(None, 1)
+
+    conn = connected(bot, update, chat, user.id)
+    if not conn == False:
+        chat_id = conn
+        chat_name = dispatcher.bot.getChat(conn).title
+    else:
+        chat_id = chat.id
+        if chat.type == "private":
+            chat_name = "local notes"
+        else:
+            chat_name = chat.title
+
+    if len(args) < 2:
+        return
+
+    chat_filters = sql.get_chat_triggers(chat_id)
+
+    if not chat_filters:
+        update.effective_message.reply_text("No filters are active here!")
+        return
+
+    for keyword in chat_filters:
+        if keyword == args[1]:
+            sql.remove_filter(chat_id, args[1])
+            update.effective_message.reply_text("Yep, I'll stop replying to that in *{}*.".format(chat_name), parse_mode=telegram.ParseMode.MARKDOWN)
+            raise DispatcherHandlerStop
+
+    update.effective_message.reply_text("That's not a current filter - run /filters for all active filters.")
+
+
+@run_async
 def reply_filter(bot: Bot, update: Update):
-
-    chat = update.effective_chat
-    message = update.effective_message
+    chat = update.effective_chat  # type: Optional[Chat]
+    message = update.effective_message  # type: Optional[Message]
     to_match = extract_text(message)
-
     if not to_match:
         return
+
+    # my custom thing
+    if message.reply_to_message:
+        message = message.reply_to_message
+    ad_filter = ""
+    # my custom thing
 
     chat_filters = sql.get_chat_triggers(chat.id)
     for keyword in chat_filters:
         pattern = r"( |^|[^\w])" + re.escape(keyword) + r"( |$|[^\w])"
         if re.search(pattern, to_match, flags=re.IGNORECASE):
             filt = sql.get_filter(chat.id, keyword)
+            buttons = sql.get_buttons(chat.id, filt.keyword)
             if filt.is_sticker:
                 message.reply_sticker(filt.reply)
             elif filt.is_document:
                 message.reply_document(filt.reply)
             elif filt.is_image:
-                message.reply_photo(filt.reply)
+                if len(buttons) > 0:
+                    keyb = build_keyboard(buttons)
+                    keyboard = InlineKeyboardMarkup(keyb)
+                    message.reply_photo(filt.reply, reply_markup=keyboard)
+                else:
+                    message.reply_photo(filt.reply)
             elif filt.is_audio:
                 message.reply_audio(filt.reply)
             elif filt.is_voice:
@@ -187,32 +248,35 @@ def reply_filter(bot: Bot, update: Update):
             elif filt.is_video:
                 message.reply_video(filt.reply)
             elif filt.has_markdown:
-                buttons = sql.get_buttons(chat.id, filt.keyword)
                 keyb = build_keyboard(buttons)
                 keyboard = InlineKeyboardMarkup(keyb)
 
+                should_preview_disabled = True
+                if "telegra.ph" in filt.reply or "youtu.be" in filt.reply:
+                    should_preview_disabled = False
+
                 try:
-                    message.reply_text(filt.reply, parse_mode=ParseMode.MARKDOWN,
-                                       disable_web_page_preview=True,
+                    message.reply_text(ad_filter + "\n" + filt.reply, parse_mode=ParseMode.MARKDOWN,
+                                       disable_web_page_preview=should_preview_disabled,
                                        reply_markup=keyboard)
                 except BadRequest as excp:
                     if excp.message == "Unsupported url protocol":
                         message.reply_text("You seem to be trying to use an unsupported url protocol. Telegram "
                                            "doesn't support buttons for some protocols, such as tg://. Please try "
-                                           "again, or ask in @allukatm for help.")
+                                           "again, or ask in @AnonymousD3061 for help.")
                     elif excp.message == "Reply message not found":
                         bot.send_message(chat.id, filt.reply, parse_mode=ParseMode.MARKDOWN,
                                          disable_web_page_preview=True,
                                          reply_markup=keyboard)
                     else:
                         message.reply_text("This note could not be sent, as it is incorrectly formatted. Ask in "
-                                           "@allukatm if you can't figure out why!")
+                                           "@AnonymousD3061 you can't figure out why!")
                         LOGGER.warning("Message %s could not be parsed", str(filt.reply))
                         LOGGER.exception("Could not parse filter %s in chat %s", str(filt.keyword), str(chat.id))
 
             else:
                 # LEGACY - all new filters will have has_markdown set to True.
-                message.reply_text(filt.reply)
+                message.reply_text(ad_filter + "\n" + filt.reply)
             break
 
 
@@ -226,7 +290,8 @@ def __migrate__(old_chat_id, new_chat_id):
 
 def __chat_settings__(chat_id, user_id):
     cust_filters = sql.get_chat_triggers(chat_id)
-    return "There are currently `{}` custom filters here.".format(len(cust_filters))
+    return "There are `{}` custom filters here.".format(len(cust_filters))
+
 
 
 __help__ = """
