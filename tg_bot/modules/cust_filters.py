@@ -1,27 +1,29 @@
 import re
-import html
+from typing import Optional
 
 import telegram
 from telegram import ParseMode, InlineKeyboardMarkup, Message, Chat
-from telegram import Bot, Update
+from telegram import Update, Bot
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
 
 from tg_bot import dispatcher, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import user_admin, connection_status
+from tg_bot.modules.helper_funcs.chat_status import user_admin
 from tg_bot.modules.helper_funcs.extraction import extract_text
 from tg_bot.modules.helper_funcs.filters import CustomFilters
 from tg_bot.modules.helper_funcs.misc import build_keyboard
 from tg_bot.modules.helper_funcs.string_handling import split_quotes, button_markdown_parser
 from tg_bot.modules.sql import cust_filters_sql as sql
 
+from tg_bot.modules.connection import connected
+
 HANDLER_GROUP = 10
+BASIC_FILTER_STRING = "*Filters in this chat:*\n"
 
 
 @run_async
-@connection_status
 def list_handlers(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
@@ -38,13 +40,13 @@ def list_handlers(bot: Bot, update: Update):
             filter_list = "*local filters:*\n"
         else:
             chat_name = chat.title
-            filter_list = "*Filters in {}*:\n"
+            filter_list = "*Filters in {}*:\n".format(chat_name)
 
 
     all_handlers = sql.get_chat_triggers(chat_id)
 
     if not all_handlers:
-        update.effective_message.reply_text("No filters in {}!".format(chat_name))
+        update.effective_message.reply_text("No filters in *{}*!".format(chat_name), parse_mode=telegram.ParseMode.MARKDOWN)
         return
 
     for keyword in all_handlers:
@@ -60,7 +62,6 @@ def list_handlers(bot: Bot, update: Update):
 
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
-@connection_status
 @user_admin
 def filters(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
@@ -149,32 +150,6 @@ def filters(bot: Bot, update: Update):
 
 
 # NOT ASYNC BECAUSE DISPATCHER HANDLER RAISED
-@connection_status
-@user_admin
-def stop_filter(bot: Bot, update: Update):
-
-    chat = update.effective_chat
-    args = update.effective_message.text.split(None, 1)
-
-    if len(args) < 2:
-        return
-
-    chat_filters = sql.get_chat_triggers(chat.id)
-
-    if not chat_filters:
-        update.effective_message.reply_text("No filters are active here!")
-        return
-
-    for keyword in chat_filters:
-        if keyword == args[1]:
-            sql.remove_filter(chat.id, args[1])
-            update.effective_message.reply_text("Yep, I'll stop replying to that.")
-            raise DispatcherHandlerStop
-
-    update.effective_message.reply_text("That's not a current filter - run /filters for all active filters.")
-
-
-@run_async
 @user_admin
 def stop_filter(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
@@ -198,7 +173,7 @@ def stop_filter(bot: Bot, update: Update):
     chat_filters = sql.get_chat_triggers(chat_id)
 
     if not chat_filters:
-        update.effective_message.reply_text("No filters are active here!")
+        update.effective_message.reply_text("No filters are active in *{}*!".format(chat_name), parse_mode=telegram.ParseMode.MARKDOWN)
         return
 
     for keyword in chat_filters:
@@ -218,11 +193,9 @@ def reply_filter(bot: Bot, update: Update):
     if not to_match:
         return
 
-    # my custom thing
     if message.reply_to_message:
         message = message.reply_to_message
-    ad_filter = ""
-    # my custom thing
+
 
     chat_filters = sql.get_chat_triggers(chat.id)
     for keyword in chat_filters:
@@ -230,17 +203,15 @@ def reply_filter(bot: Bot, update: Update):
         if re.search(pattern, to_match, flags=re.IGNORECASE):
             filt = sql.get_filter(chat.id, keyword)
             buttons = sql.get_buttons(chat.id, filt.keyword)
+            if len(buttons) > 0:
+                keyb = build_keyboard(buttons)
+                keyboard = InlineKeyboardMarkup(keyb)
             if filt.is_sticker:
                 message.reply_sticker(filt.reply)
             elif filt.is_document:
                 message.reply_document(filt.reply)
             elif filt.is_image:
-                if len(buttons) > 0:
-                    keyb = build_keyboard(buttons)
-                    keyboard = InlineKeyboardMarkup(keyb)
-                    message.reply_photo(filt.reply, reply_markup=keyboard)
-                else:
-                    message.reply_photo(filt.reply)
+                message.reply_photo(filt.reply, reply_markup=keyboard)
             elif filt.is_audio:
                 message.reply_audio(filt.reply)
             elif filt.is_voice:
@@ -256,7 +227,7 @@ def reply_filter(bot: Bot, update: Update):
                     should_preview_disabled = False
 
                 try:
-                    message.reply_text(ad_filter + "\n" + filt.reply, parse_mode=ParseMode.MARKDOWN,
+                    message.reply_text(filt.reply, parse_mode=ParseMode.MARKDOWN,
                                        disable_web_page_preview=should_preview_disabled,
                                        reply_markup=keyboard)
                 except BadRequest as excp:
@@ -270,13 +241,13 @@ def reply_filter(bot: Bot, update: Update):
                                          reply_markup=keyboard)
                     else:
                         message.reply_text("This note could not be sent, as it is incorrectly formatted. Ask in "
-                                           "@AnonymousD3061 you can't figure out why!")
+                                           "@AnonymousD3061 if you can't figure out why!")
                         LOGGER.warning("Message %s could not be parsed", str(filt.reply))
                         LOGGER.exception("Could not parse filter %s in chat %s", str(filt.keyword), str(chat.id))
 
             else:
                 # LEGACY - all new filters will have has_markdown set to True.
-                message.reply_text(ad_filter + "\n" + filt.reply)
+                message.reply_text(filt.reply)
             break
 
 
@@ -293,7 +264,6 @@ def __chat_settings__(chat_id, user_id):
     return "There are `{}` custom filters here.".format(len(cust_filters))
 
 
-
 __help__ = """
  - /filters: list all active filters in this chat.
 
@@ -305,6 +275,8 @@ doin?
  - /stop <filter keyword>: stop that filter.
 """
 
+__mod_name__ = "Filters"
+
 FILTER_HANDLER = CommandHandler("filter", filters)
 STOP_HANDLER = CommandHandler("stop", stop_filter)
 LIST_HANDLER = DisableAbleCommandHandler("filters", list_handlers, admin_ok=True)
@@ -314,6 +286,3 @@ dispatcher.add_handler(FILTER_HANDLER)
 dispatcher.add_handler(STOP_HANDLER)
 dispatcher.add_handler(LIST_HANDLER)
 dispatcher.add_handler(CUST_FILTER_HANDLER, HANDLER_GROUP)
-
-__mod_name__ = "Filters"
-__handlers__ = [FILTER_HANDLER, STOP_HANDLER, LIST_HANDLER, (CUST_FILTER_HANDLER, HANDLER_GROUP)]
