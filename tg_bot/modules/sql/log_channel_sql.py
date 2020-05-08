@@ -22,6 +22,7 @@ LOGS_INSERTION_LOCK = threading.RLock()
 CHANNELS = {}
 
 
+
 def set_chat_log_channel(chat_id, log_channel):
     with LOGS_INSERTION_LOCK:
         res = SESSION.query(GroupLogs).get(str(chat_id))
