@@ -662,7 +662,16 @@ def get_frules(bot: Bot, update: Update, args: List[str]):
 @run_async
 def fed_broadcast(bot: Bot, update: Update, args: List[str]):
     msg = update.effective_message  # type: Optional[Message]
+    chat = update.effective_chat
     user = update.effective_user  # type: Optional[User]
+    fed_id = sql.get_fed_id(chat.id)
+
+ 
+    if is_user_fed_admin(fed_id, user.id) == False:
+        update.effective_message.reply_text("Only federation admins can do this!")
+        return
+
+
     if args:
         chat = update.effective_chat  # type: Optional[Chat]
         fed_id = sql.get_fed_id(chat.id)
