@@ -8,14 +8,14 @@ from telegram.error import BadRequest
 from telegram.ext import CommandHandler, MessageHandler, DispatcherHandlerStop, run_async
 from telegram.utils.helpers import escape_markdown
 
-from alluka import dispatcher, LOGGER
-from alluka.modules.disable import DisableAbleCommandHandler
-from alluka.modules.helper_funcs.chat_status import user_admin, connection_status
-from alluka.modules.helper_funcs.extraction import extract_text
-from alluka.modules.helper_funcs.filters import CustomFilters
-from alluka.modules.helper_funcs.misc import build_keyboard
-from alluka.modules.helper_funcs.string_handling import split_quotes, button_markdown_parser
-from alluka.modules.sql import cust_filters_sql as sql
+from tg_bot import dispatcher, LOGGER
+from tg_bot.modules.disable import DisableAbleCommandHandler
+from tg_bot.modules.helper_funcs.chat_status import user_admin, connection_status
+from tg_bot.modules.helper_funcs.extraction import extract_text
+from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.modules.helper_funcs.misc import build_keyboard
+from tg_bot.modules.helper_funcs.string_handling import split_quotes, button_markdown_parser
+from tg_bot.modules.sql import cust_filters_sql as sql
 
 HANDLER_GROUP = 10
 
