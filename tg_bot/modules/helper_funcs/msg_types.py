@@ -15,7 +15,7 @@ class Types(IntEnum):
     AUDIO = 5
     VOICE = 6
     VIDEO = 7
-
+    VIDEO_NOTE = 8
 
 def get_note_type(msg: Message):
     data_type = None
@@ -37,7 +37,7 @@ def get_note_type(msg: Message):
             data_type = Types.TEXT
 
     elif msg.reply_to_message:
-        entities = msg.reply_to_message.parse_entities()
+        entities = msg.reply_to_message.parse_entities() or msg.reply_to_message.parse_caption_entities()
         msgtext = msg.reply_to_message.text or msg.reply_to_message.caption
         if len(args) >= 2 and msg.reply_to_message.text:  # not caption, text
             text, buttons = button_markdown_parser(msgtext,
@@ -75,6 +75,11 @@ def get_note_type(msg: Message):
             content = msg.reply_to_message.video.file_id
             text, buttons = button_markdown_parser(msgtext, entities=entities)
             data_type = Types.VIDEO
+        elif msg.reply_to_message.video_note:
+            content = msg.reply_to_message.video_note.file_id
+            text, buttons = button_markdown_parser(msgtext, entities=entities)
+            data_type = Types.VIDEO_NOTE
+
 
     return note_name, text, data_type, content, buttons
 
@@ -89,7 +94,8 @@ def get_welcome_type(msg: Message):
 
     buttons = []
     # determine what the contents of the filter are - text, image, sticker, etc
-    if len(args) >= 2:
+    # some media, cannot have captions in the Telegram BOT API
+    if len(args) >= 2 and not msg.reply_to_message:
         offset = len(args[1]) - len(msg.text)  # set correct offset relative to command + notename
         text, buttons = button_markdown_parser(args[1], entities=msg.parse_entities(), offset=offset)
         if buttons:
@@ -126,5 +132,13 @@ def get_welcome_type(msg: Message):
         content = msg.reply_to_message.video.file_id
         text = msg.reply_to_message.caption
         data_type = Types.VIDEO
+    elif msg.reply_to_message.video_note:
+        msgtext = ""
+        if len(args) > 1:
+            msgtext = args[1]
+        content = msg.reply_to_message.video_note.file_id
+        text, buttons = button_markdown_parser(msgtext, entities=msg.reply_to_message.parse_caption_entities(), offset=0)
+        data_type = Types.VIDEO_NOTE
+
 
     return text, data_type, content, buttons
