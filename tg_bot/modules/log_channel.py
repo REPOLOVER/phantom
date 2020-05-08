@@ -11,9 +11,9 @@ if is_module_loaded(FILENAME):
     from telegram.ext import CommandHandler, run_async
     from telegram.utils.helpers import escape_markdown
 
-    from alluka import dispatcher, LOGGER, GBAN_LOGS
-    from alluka.modules.helper_funcs.chat_status import user_admin
-    from alluka.modules.sql import log_channel_sql as sql
+    from tg_bot import dispatcher, LOGGER, GBAN_LOGS
+    from tg_bot.modules.helper_funcs.chat_status import user_admin
+    from tg_bot.modules.sql import log_channel_sql as sql
 
 
     def loggable(func):
