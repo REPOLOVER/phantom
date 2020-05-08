@@ -1,4 +1,5 @@
 import html
+
 from typing import List
 
 import telegram.ext as tg
@@ -11,10 +12,10 @@ from telegram.utils.helpers import mention_html
 import tg_bot.modules.sql.locks_sql as sql
 from tg_bot import dispatcher, SUDO_USERS, DEV_USERS, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import (can_delete, is_user_admin, user_not_admin, user_admin,
-                                                     bot_can_delete, is_bot_admin, connection_status)
+from tg_bot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, bot_can_delete, is_bot_admin, connection_status
 from tg_bot.modules.helper_funcs.filters import CustomFilters
 from tg_bot.modules.log_channel import loggable
+from tg_bot.modules.sql import users_sql
 
 LOCK_TYPES = {
     'sticker': Filters.sticker,
@@ -102,6 +103,7 @@ def locktypes(bot: Bot, update: Update):
 @bot_can_delete
 @loggable
 def lock(bot: Bot, update: Update, args: List[str]) -> str:
+
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
@@ -112,10 +114,11 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                 sql.update_lock(chat.id, args[0], locked=True)
                 message.reply_text("Locked {} messages for all non-admins!".format(args[0]))
 
-                return (f"<b>{html.escape(chat.title)}:</b>\n"
-                        f"#LOCK\n"
-                        f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                        f"Locked <code>{args[0]}</code>.")
+                return "<b>{}:</b>" \
+                       "\n#LOCK" \
+                       "\n<b>Admin:</b> {}" \
+                       "\nLocked <code>{}</code>.".format(html.escape(chat.title),
+                                                          mention_html(user.id, user.first_name), args[0])
 
             elif args[0] in RESTRICTION_TYPES:
                 sql.update_restriction(chat.id, args[0], locked=True)
@@ -136,10 +139,11 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                     chat.set_permissions(can_send_messages=False)
                 """
                 message.reply_text("Locked {} for all non-admins!".format(args[0]))
-                return (f"<b>{html.escape(chat.title)}:</b>\n"
-                        f"#LOCK\n"
-                        f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                        f"Locked <code>{args[0]}</code>.")
+                return "<b>{}:</b>" \
+                       "\n#LOCK" \
+                       "\n<b>Admin:</b> {}" \
+                       "\nLocked <code>{}</code>.".format(html.escape(chat.title),
+                                                          mention_html(user.id, user.first_name), args[0])
 
             else:
                 message.reply_text("What are you trying to lock...? Try /locktypes for the list of lockables")
@@ -155,6 +159,7 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
 @user_admin
 @loggable
 def unlock(bot: Bot, update: Update, args: List[str]) -> str:
+
     chat = update.effective_chat
     user = update.effective_user
     message = update.effective_message
@@ -163,11 +168,12 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
         if len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=False)
-                message.reply_text(f"Unlocked {args[0]} for everyone!")
-                return (f"<b>{html.escape(chat.title)}:</b>\n"
-                        f"#UNLOCK\n"
-                        f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                        f"Unlocked <code>{args[0]}</code>.")
+                message.reply_text("Unlocked {} for everyone!".format(args[0]))
+                return "<b>{}:</b>" \
+                       "\n#UNLOCK" \
+                       "\n<b>Admin:</b> {}" \
+                       "\nUnlocked <code>{}</code>.".format(html.escape(chat.title),
+                                                            mention_html(user.id, user.first_name), args[0])
 
             elif args[0] in RESTRICTION_TYPES:
                 sql.update_restriction(chat.id, args[0], locked=False)
@@ -190,10 +196,11 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
                 """
                 message.reply_text("Unlocked {} for everyone!".format(args[0]))
 
-                return (f"<b>{html.escape(chat.title)}:</b>\n"
-                        f"#UNLOCK\n"
-                        f"<b>Admin:</b> {mention_html(user.id, user.first_name)}\n"
-                        f"Unlocked <code>{args[0]}</code>.")
+                return "<b>{}:</b>" \
+                       "\n#UNLOCK" \
+                       "\n<b>Admin:</b> {}" \
+                       "\nUnlocked <code>{}</code>.".format(html.escape(chat.title),
+                                                            mention_html(user.id, user.first_name), args[0])
             else:
                 message.reply_text("What are you trying to unlock...? Try /locktypes for the list of lockables")
 
@@ -206,6 +213,7 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
 @run_async
 @user_not_admin
 def del_lockables(bot: Bot, update: Update):
+
     chat = update.effective_chat
     message = update.effective_message
 
@@ -221,7 +229,7 @@ def del_lockables(bot: Bot, update: Update):
                             return
 
                         chat.kick_member(new_mem.id)
-                        message.reply_text("Only admins are allowed to add bots to this chat! Behave or I'll punch you.")
+                        message.reply_text("Only admins are allowed to add bots to this chat!.")
             else:
                 try:
                     message.delete()
@@ -237,10 +245,11 @@ def del_lockables(bot: Bot, update: Update):
 @run_async
 @user_not_admin
 def rest_handler(bot: Bot, update: Update):
+
     msg = update.effective_message
     chat = update.effective_chat
-    for restriction, _filter in RESTRICTION_TYPES.items():
-        if _filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
+    for restriction, filter in RESTRICTION_TYPES.items():
+        if filter(msg) and sql.is_restr_locked(chat.id, restriction) and can_delete(chat, bot.id):
             try:
                 msg.delete()
             except BadRequest as excp:
@@ -263,10 +272,11 @@ def format_lines(lst, spaces):
 
 
 def repl(lst, index, true_val, false_val):
-    return [t[0:index] + [true_val if t[index] else false_val] + t[index + 1:len(t)] for t in lst]
+    return [t[0:index] + [true_val if t[index] else false_val] + t[index+1:len(t)] for t in lst]
 
 
 def build_lock_message(chat_id):
+
     locks = sql.get_locks(chat_id)
     restr = sql.get_restr(chat_id)
 
@@ -277,18 +287,18 @@ def build_lock_message(chat_id):
         ls = []
         if locks:
             ls += repl([["sticker", "=", locks.sticker], ["audio", "=", locks.audio], ["voice", "=", locks.voice],
-                        ["document", "=", locks.document], ["video", "=", locks.video], ["contact", "=", locks.contact],
-                        ["photo", "=", locks.photo], ["gif", "=", locks.gif], ["url", "=", locks.url],
-                        ["bots", "=", locks.bots], ["forward", "=", locks.forward], ["game", "=", locks.game],
-                        ["location", "=", locks.location]]
-                       , 2, "Locked", "Unlocked")
+                      ["document", "=", locks.document], ["video", "=", locks.video], ["contact", "=", locks.contact],
+                      ["photo", "=", locks.photo], ["gif", "=", locks.gif], ["url", "=", locks.url],
+                      ["bots", "=", locks.bots], ["forward", "=", locks.forward], ["game", "=", locks.game],
+                      ["location", "=", locks.location]]
+                     , 2, "Locked", "Unlocked")
         if restr:
             ls += repl([["messages", "=", restr.messages], ["media", "=", restr.media],
-                        ["other", "=", restr.other], ["previews", "=", restr.preview],
-                        ["all", "=", all([restr.messages, restr.media, restr.other, restr.preview])]]
-                       , 2, "Restricted", "Unrestricted")
+                      ["other", "=", restr.other], ["previews", "=", restr.preview],
+                      ["all", "=", all([restr.messages, restr.media, restr.other, restr.preview])]]
+                     , 2, "Restricted", "Unrestricted")
         # DON'T REMOVE THE NEWLINE BELOW
-        res += "```\n" + format_lines(ls, 1) + "```"
+        res += "```\n" + format_lines(ls,1) + "```"
     return res
 
 
@@ -296,6 +306,7 @@ def build_lock_message(chat_id):
 @connection_status
 @user_admin
 def list_locks(bot: Bot, update: Update):
+
     chat = update.effective_chat
 
     res = build_lock_message(chat.id)
@@ -341,5 +352,4 @@ dispatcher.add_handler(LOCKABLE_HANDLER, PERM_GROUP)
 dispatcher.add_handler(RESTRICTION_HANDLER, REST_GROUP)
 
 __mod_name__ = "Locks"
-__handlers__ = [LOCKTYPES_HANDLER, LOCK_HANDLER, UNLOCK_HANDLER, LOCKED_HANDLER, (LOCKABLE_HANDLER, PERM_GROUP),
-                (RESTRICTION_HANDLER, REST_GROUP)]
+__handlers__ = [LOCKTYPES_HANDLER, LOCK_HANDLER, UNLOCK_HANDLER, LOCKED_HANDLER, (LOCKABLE_HANDLER, PERM_GROUP), (RESTRICTION_HANDLER, REST_GROUP)]
